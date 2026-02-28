@@ -9,7 +9,7 @@
    CONFIGURATION  ← PUT YOUR GOOGLE APPS SCRIPT URL HERE
    See SETUP-GUIDE.md for instructions
 ───────────────────────────────────────────────── */
-const SHEETS_URL = ''; // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx3uQ7LM371k-G3NYRyBB05SX4vzBoHZbBfwXn2dsTeaMaxrClJHpI6qiRyBHK1lqCR/exec'; // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
 
 /* ─────────────────────────────────────────────────
    INDEXEDDB
