@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#0d0d0f"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="FitTrack"/>
+  <title>FitTrack</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════ TOAST ═══════════════════ -->
+<div id="toast"></div>
+
+<!-- ═══════════════════ CONFIRM SHEET ═══════════════════ -->
+<div id="sheet-overlay">
+  <div class="confirm-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-icon">🗑️</div>
+    <div class="sheet-title" id="sheet-title">Delete?</div>
+    <div class="sheet-msg" id="sheet-msg"></div>
+    <div class="sheet-btns">
+      <button class="btn btn-danger-outline" id="sheet-confirm">Delete</button>
+      <button class="btn btn-ghost" onclick="closeSheet()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ INSTALL BANNER ═══════════════════ -->
+<div id="install-banner">
+  <div class="ib-text">
+    <strong>📲 Install FitTrack</strong>
+    <span>Add to home screen for offline access</span>
+  </div>
+  <button class="ib-btn" id="install-btn">Install</button>
+  <button class="ib-close" onclick="dismissBanner()">✕</button>
+</div>
+
+<!-- ═══════════════════ SYNC STATUS ═══════════════════ -->
+<div id="sync-bar">
+  <span id="sync-icon">☁️</span>
+  <span id="sync-text">Syncing…</span>
+</div>
+
+<!-- ═══════════════════ SHELL ═══════════════════ -->
+<div id="shell">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="logo">Fit<span>Track</span></div>
+    <div class="top-right">
+      <div class="badge">
+        <div class="badge-dot"></div>
+        <b id="wk-count">0</b> this week
+      </div>
+      <div class="sync-status" id="sync-status-icon" title="Sync status">☁️</div>
+    </div>
+  </div>
+
+  <!-- Views Container -->
+  <div id="views">
+
+    <!-- ══════════════ HOME ══════════════ -->
+    <div class="view active" id="view-home">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-val" id="stat-week">0</div>
+          <div class="stat-label">Week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-month">0</div>
+          <div class="stat-label">Month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-total">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+      </div>
+
+      <div class="cal-card">
+        <div class="cal-nav">
+          <button class="cal-arrow" id="cal-prev">&#8249;</button>
+          <div class="cal-month-label" id="cal-month-label"></div>
+          <button class="cal-arrow" id="cal-next">&#8250;</button>
+        </div>
+        <div class="cal-dow">
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-info">
+          <div class="cal-info-text">
+            <div class="cal-info-date" id="cal-sel-date"></div>
+            <div class="cal-info-sub" id="cal-sel-sub"></div>
+          </div>
+          <button class="cal-action-btn" id="cal-log-btn">LOG</button>
+        </div>
+        <div class="cal-legend">
+          <div class="legend-item">
+            <div class="legend-dot filled"></div> Session
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot ring"></div> Today
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="goTo('history')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        View History
+      </button>
+    </div>
+
+    <!-- ══════════════ LOG ══════════════ -->
+    <div class="view" id="view-log">
+      <!-- Date Selector -->
+      <div class="date-selector">
+        <div class="ds-left">
+          <div class="ds-label">Session Date</div>
+          <div class="ds-date" id="ds-date-label"></div>
+        </div>
+        <div class="ds-right">
+          <input type="date" class="ds-input" id="log-date-input"/>
+          <button class="ds-today" id="log-today-btn">Today</button>
+        </div>
+      </div>
+
+      <!-- Log actions row -->
+      <div class="log-top-row">
+        <h2 class="section-title">Exercises</h2>
+        <button class="btn btn-danger-ghost" id="del-day-btn" style="display:none" onclick="deleteDayHandler()">
+          🗑 Delete Day
+        </button>
+      </div>
+
+      <!-- Add exercise -->
+      <div class="add-ex-wrap">
+        <div class="search-input-wrap">
+          <input type="text" class="add-ex-input" id="new-ex-input" placeholder="Search or type exercise…" autocomplete="off" autocapitalize="words"/>
+          <div class="ex-suggestions" id="ex-suggestions"></div>
+        </div>
+        <button class="add-ex-btn" onclick="addExerciseFromInput()">Add</button>
+      </div>
+
+      <div id="exercises-list"></div>
+
+      <div class="empty-state" id="log-empty" style="display:none">
+        <div class="empty-icon">💪</div>
+        <p>Search an exercise above or type a new one</p>
+      </div>
+
+      <button class="btn btn-primary" id="save-btn" style="display:none;margin-top:8px" onclick="saveSession()">
+        ✓ Save Session
+      </button>
+    </div>
+
+    <!-- ══════════════ EXERCISES ══════════════ -->
+    <div class="view" id="view-exercises">
+      <div class="page-header">
+        <h1 class="page-title">Exercises</h1>
+        <span class="page-count" id="ex-lib-count">0</span>
+      </div>
+
+      <!-- Add to library -->
+      <div class="add-lib-wrap">
+        <div class="add-lib-inputs">
+          <input type="text" class="field-input" id="lib-ex-name" placeholder="Exercise name" autocapitalize="words" autocomplete="off"/>
+          <select class="field-input field-select" id="lib-ex-cat">
+            <option value="">Category (optional)</option>
+            <option value="Chest">Chest</option>
+            <option value="Back">Back</option>
+            <option value="Shoulders">Shoulders</option>
+            <option value="Arms">Arms</option>
+            <option value="Legs">Legs</option>
+            <option value="Core">Core</option>
+            <option value="Cardio">Cardio</option>
+            <option value="Full Body">Full Body</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="addToLibrary()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Save
+        </button>
+      </div>
+
+      <!-- Search library -->
+      <div class="lib-search-wrap">
+        <svg class="lib-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="lib-search-input" id="lib-search" placeholder="Search exercises…" autocomplete="off"/>
+      </div>
+
+      <!-- Category filter chips -->
+      <div class="cat-chips" id="cat-chips">
+        <button class="cat-chip active" data-cat="">All</button>
+        <button class="cat-chip" data-cat="Chest">Chest</button>
+        <button class="cat-chip" data-cat="Back">Back</button>
+        <button class="cat-chip" data-cat="Shoulders">Shoulders</button>
+        <button class="cat-chip" data-cat="Arms">Arms</button>
+        <button class="cat-chip" data-cat="Legs">Legs</button>
+        <button class="cat-chip" data-cat="Core">Core</button>
+        <button class="cat-chip" data-cat="Cardio">Cardio</button>
+        <button class="cat-chip" data-cat="Full Body">Full Body</button>
+      </div>
+
+      <div id="lib-list"></div>
+
+      <div class="empty-state" id="lib-empty" style="display:none">
+        <div class="empty-icon">🏋️</div>
+        <p>Add exercises to your library above</p>
+      </div>
+    </div>
+
+    <!-- ══════════════ HISTORY ══════════════ -->
+    <div class="view" id="view-history">
+      <div class="page-header">
+        <h1 class="page-title">History</h1>
+      </div>
+      <div id="history-list"></div>
+      <div class="empty-state" id="hist-empty" style="display:none">
+        <div class="empty-icon">📋</div>
+        <p>No sessions logged yet</p>
+      </div>
+    </div>
+
+    <!-- ══════════════ DETAIL ══════════════ -->
+    <div class="view" id="view-detail">
+      <div class="detail-header">
+        <div class="detail-title" id="detail-title"></div>
+        <button class="btn btn-danger-ghost" id="del-day-detail-btn">🗑 Day</button>
+      </div>
+      <div id="detail-exercises"></div>
+      <button class="btn btn-primary" style="margin-top:8px" id="detail-edit-btn">Edit Session</button>
+    </div>
+
+  </div><!-- /#views -->
+
+  <!-- Bottom Nav -->
+  <nav class="nav">
+    <button class="nav-item active" id="nav-home" onclick="goTo('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" id="nav-log" onclick="goTo('log')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="16"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      <span class="nav-label">Log</span>
+    </button>
+    <button class="nav-item" id="nav-exercises" onclick="goTo('exercises')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6.5 6.5h11M6.5 17.5h11M3 12h18M6 3l-3 3 3 3M18 3l3 3-3 3M6 21l-3-3 3-3M18 21l3-3-3-3"/>
+      </svg>
+      <span class="nav-label">Exercises</span>
+    </button>
+    <button class="nav-item" id="nav-history" onclick="goTo('history')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+      <span class="nav-label">History</span>
+    </button>
+  </nav>
+
+</div><!-- /#shell -->
+
+<script src="app.js"></script>
+</body>
+</html>
