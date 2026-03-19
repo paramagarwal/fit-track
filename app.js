@@ -6,7 +6,7 @@
    SHEETS_URL to enable cloud sync.
 ══════════════════════════════════════════════════════════════ */
 
-const SHEETS_URL = ''; // ← paste your Web App URL here
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyoCG-wmPKXAvz2HzWlFQbKW-sCZse4Zxk4ms6KjZ8rXwFLEpwTFN6VOuGrrBGRxNqHKA/exec'; // ← paste your Web App URL here
 
 /* ════════════════════════════════════
    STORAGE HELPERS
