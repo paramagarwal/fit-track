@@ -10,7 +10,7 @@
 <title>FitTrack</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -22,7 +22,7 @@
 <div id="confirm-overlay" role="dialog" aria-modal="true">
   <div class="confirm-sheet">
     <div class="drag-bar"></div>
-    <div class="confirm-icon" id="conf-icon">🗑️</div>
+    <div class="confirm-icon" id="conf-icon">⚠️</div>
     <div class="confirm-title" id="conf-title">Are you sure?</div>
     <div class="confirm-msg"   id="conf-msg">This cannot be undone.</div>
     <div class="confirm-btns">
@@ -40,30 +40,89 @@
   </div>
 </div>
 
-<!-- APP SHELL -->
-<div id="shell">
+<!-- ONBOARDING SCREEN -->
+<div id="onboarding">
+  <div class="ob-wrap">
+    <div class="ob-logo">Fit<em>Track</em></div>
+    <div class="ob-tagline">Your personal fitness companion</div>
+    <div class="ob-steps">
+      <!-- Step 1 -->
+      <div class="ob-step active" id="ob-step-1">
+        <div class="ob-step-icon">👋</div>
+        <h2 class="ob-step-title">Welcome!</h2>
+        <p class="ob-step-desc">Let's set up your profile. This takes about 30 seconds.</p>
+        <div class="form-grp mt16">
+          <label class="form-lbl">Your Name</label>
+          <input id="ob-name" type="text" class="inp" placeholder="e.g. Alex" autocapitalize="words"/>
+        </div>
+        <button class="btn btn-accent mt16" onclick="obNext(1)">Continue →</button>
+      </div>
+      <!-- Step 2 -->
+      <div class="ob-step" id="ob-step-2">
+        <div class="ob-step-icon">📏</div>
+        <h2 class="ob-step-title">Body Metrics</h2>
+        <p class="ob-step-desc">Used to calculate your BMI. You can change these anytime.</p>
+        <div class="form-row mt16">
+          <div class="form-grp"><label class="form-lbl">Height (cm)</label><input id="ob-height" type="number" class="inp" placeholder="178" inputmode="numeric"/></div>
+          <div class="form-grp"><label class="form-lbl">Weight (kg)</label><input id="ob-weight" type="number" class="inp" placeholder="75" inputmode="decimal" step="0.1"/></div>
+        </div>
+        <div class="form-grp">
+          <label class="form-lbl">Target Weight (kg) <span style="color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">optional</span></label>
+          <input id="ob-target" type="number" class="inp" placeholder="e.g. 70" inputmode="decimal" step="0.1"/>
+        </div>
+        <div style="display:flex;gap:9px;margin-top:16px">
+          <button class="btn btn-ghost" onclick="obBack(2)" style="flex:1">← Back</button>
+          <button class="btn btn-accent" onclick="obNext(2)" style="flex:2">Continue →</button>
+        </div>
+      </div>
+      <!-- Step 3 -->
+      <div class="ob-step" id="ob-step-3">
+        <div class="ob-step-icon">🎯</div>
+        <h2 class="ob-step-title">Daily Goals</h2>
+        <p class="ob-step-desc">Set your daily nutrition and hydration targets.</p>
+        <div class="form-grp mt16"><label class="form-lbl">🔥 Calorie Goal (kcal/day)</label><input id="ob-cal" type="number" class="inp" placeholder="2000" inputmode="numeric"/></div>
+        <div class="form-row">
+          <div class="form-grp"><label class="form-lbl">💪 Protein (g)</label><input id="ob-prot" type="number" class="inp" placeholder="150" inputmode="numeric"/></div>
+          <div class="form-grp"><label class="form-lbl">💧 Water (ml)</label><input id="ob-water" type="number" class="inp" placeholder="2500" inputmode="numeric"/></div>
+        </div>
+        <div style="display:flex;gap:9px;margin-top:16px">
+          <button class="btn btn-ghost" onclick="obBack(3)" style="flex:1">← Back</button>
+          <button class="btn btn-accent" onclick="obFinish()" style="flex:2">Get Started 🚀</button>
+        </div>
+      </div>
+    </div>
+    <!-- Step indicators -->
+    <div class="ob-dots">
+      <div class="ob-dot active" id="ob-dot-1"></div>
+      <div class="ob-dot" id="ob-dot-2"></div>
+      <div class="ob-dot" id="ob-dot-3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SHELL (hidden until onboarding complete) -->
+<div id="shell" style="display:none">
 
   <!-- TOP BAR -->
   <header class="top-bar">
     <div class="logo">Fit<em>Track</em></div>
     <div class="top-badge">
       <div class="pulse-dot"></div>
-      <span><b id="wk-count">0</b> workouts this week</span>
+      <span><b id="wk-count">0</b> this week</span>
     </div>
   </header>
 
   <!-- VIEWS -->
   <main id="views">
 
-    <!-- ══════════ HOME ══════════ -->
+    <!-- ══════ HOME ══════ -->
     <section class="view active" id="view-home">
 
       <div class="sh">
-        <h2 class="sh-title">Activity</h2>
+        <h2 class="sh-title" id="home-greeting">Good morning!</h2>
         <span class="sh-sub" id="home-date-lbl"></span>
       </div>
 
-      <!-- Calendar -->
       <div class="cal-card">
         <div class="cal-nav">
           <button class="cal-arrow" onclick="calShift(-1)" aria-label="Previous month">&#8249;</button>
@@ -76,60 +135,57 @@
         <div class="cal-grid" id="cal-grid"></div>
         <div class="cal-legend">
           <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Workout</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Water goal</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Water ✓</div>
           <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Creatine</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Diet logged</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Diet</div>
         </div>
       </div>
 
-      <!-- Habits -->
       <div class="sh"><h2 class="sh-title">Today's Habits</h2></div>
 
-      <!-- Creatine card -->
+      <!-- Creatine -->
       <div class="habit-card" id="creatine-card">
         <div class="habit-top">
           <div class="habit-icon">💊</div>
           <div class="habit-info">
             <div class="habit-label">Creatine</div>
-            <div class="habit-meta" id="cr-meta">Loading…</div>
+            <div class="habit-meta" id="cr-meta">Not taken today</div>
           </div>
         </div>
         <div class="creatine-row" id="cr-row" onclick="toggleCreatine()" role="checkbox" aria-checked="false" tabindex="0"
              onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleCreatine()}">
           <div class="cb-box" id="cr-cb" aria-hidden="true">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <span class="cb-label">Taken today</span>
-          <span class="streak-pill" id="cr-streak-badge">🔥 0</span>
+          <span class="cb-label">Mark as taken</span>
+          <span class="streak-pill" id="cr-streak-badge">🔥 0 days</span>
         </div>
       </div>
 
-      <!-- Water card -->
+      <!-- Water -->
       <div class="habit-card">
         <div class="habit-top">
           <div class="habit-icon">💧</div>
           <div class="habit-info">
             <div class="habit-label">Water Intake</div>
-            <div class="habit-meta">Daily hydration</div>
+            <div class="habit-meta" id="water-meta">Tap to log</div>
           </div>
         </div>
         <div class="water-head">
           <div class="water-val" id="water-val">0 ml</div>
-          <button class="edit-pill" onclick="openWaterEditModal()">✏️ Set Goal</button>
+          <button class="edit-pill" onclick="openWaterEditModal()">⚙️ Goal</button>
         </div>
         <div class="water-bar-bg"><div class="water-bar-fill" id="water-fill" style="width:0%"></div></div>
         <div class="water-bar-lbl" id="water-lbl">0 / 0 ml</div>
         <div class="water-btns">
-          <button class="water-btn" onclick="addWater(100)">+100</button>
+          <button class="water-btn" onclick="addWater(150)">+150</button>
           <button class="water-btn" onclick="addWater(250)">+250</button>
           <button class="water-btn" onclick="addWater(500)">+500</button>
-          <button class="water-btn" onclick="addWater(750)">+750</button>
+          <button class="water-btn water-btn-custom" onclick="openCustomWaterModal()">Custom</button>
         </div>
       </div>
 
-      <!-- Nutrition summary rings -->
+      <!-- Nutrition rings -->
       <div class="sh">
         <h2 class="sh-title">Today's Nutrition</h2>
         <button class="sh-link" onclick="goTo('diet')">Log Food →</button>
@@ -147,7 +203,7 @@
             </div>
           </div>
           <div class="ring-name">Calories</div>
-          <div class="ring-goal" id="ring-cal-goal">Goal: 2,200</div>
+          <div class="ring-goal" id="ring-cal-goal">Goal: —</div>
         </div>
         <div class="ring-card">
           <div class="ring-wrap">
@@ -161,14 +217,14 @@
             </div>
           </div>
           <div class="ring-name">Protein</div>
-          <div class="ring-goal" id="ring-pro-goal">Goal: 170g</div>
+          <div class="ring-goal" id="ring-pro-goal">Goal: —</div>
         </div>
       </div>
 
-    </section><!-- /home -->
+    </section>
 
 
-    <!-- ══════════ WORKOUT ══════════ -->
+    <!-- ══════ WORKOUT ══════ -->
     <section class="view" id="view-workout">
       <div class="tabs-row">
         <button class="tab-btn on" onclick="switchTab('workout','log',this)">Log</button>
@@ -177,20 +233,17 @@
         <button class="tab-btn"    onclick="switchTab('workout','history',this)">History</button>
       </div>
 
-      <!-- LOG tab -->
+      <!-- LOG -->
       <div class="sub-view on" id="wk-log">
-        <!-- Start card (shown when no active session) -->
         <div id="wk-start-card">
-          <div class="sh" style="padding-top:8px"><h2 class="sh-title">Quick Start</h2></div>
           <div id="wk-quick-tmpls"></div>
-          <div class="divider-row mb12"><span>or</span></div>
-          <button class="btn btn-ghost" onclick="startBlankSession()">🏋️&nbsp; Start Empty Workout</button>
+          <div class="divider-row"><span>or</span></div>
+          <button class="btn btn-ghost" onclick="startBlankSession()">🏋️ &nbsp;Start Empty Workout</button>
         </div>
-        <!-- Active session (hidden initially) -->
         <div id="wk-session" style="display:none">
           <div class="session-header">
             <div class="session-title-row">
-              <input class="session-name-inp" id="session-name" value="Morning Workout" placeholder="Session name…"/>
+              <input class="session-name-inp" id="session-name" value="Workout" placeholder="Session name…"/>
               <button class="session-cancel-btn" onclick="confirmCancelSession()">✕</button>
             </div>
             <div class="date-sel">
@@ -212,42 +265,46 @@
             <button class="btn btn-accent btn-sm" onclick="addExToSession()">+ Add</button>
           </div>
           <div id="ex-cards-list"></div>
+          <div id="no-ex-hint" class="empty-state" style="padding:20px">
+            <div class="empty-icon">💡</div>
+            <p>Search above to add your first exercise</p>
+          </div>
           <button class="btn btn-accent mt8" id="save-session-btn" onclick="saveSession()" style="display:none">✓ Save Session</button>
         </div>
       </div>
 
-      <!-- TEMPLATES tab -->
+      <!-- TEMPLATES -->
       <div class="sub-view" id="wk-templates">
         <button class="btn btn-accent mb12" onclick="openCreateTemplateModal()">+ New Template</button>
         <div id="tmpl-list"></div>
       </div>
 
-      <!-- EXERCISES tab -->
+      <!-- LIBRARY -->
       <div class="sub-view" id="wk-exercises">
         <div class="inp-row mb12">
           <input type="text" class="inp" id="new-ex-name" placeholder="Exercise name…" autocapitalize="words" style="flex:1"/>
-          <select class="inp inp-select" id="new-ex-cat" style="width:120px">
+          <select class="inp inp-select" id="new-ex-cat" style="width:110px">
             <option>Chest</option><option>Back</option><option>Legs</option>
-            <option>Shoulders</option><option>Arms</option><option>Core</option><option>Cardio</option><option>Other</option>
+            <option>Shoulders</option><option>Arms</option><option>Core</option>
+            <option>Cardio</option><option>Other</option>
           </select>
           <button class="btn btn-accent btn-sm" onclick="addExerciseToLib()">Add</button>
         </div>
         <div class="search-wrap">
           <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input class="search-inp" placeholder="Search library…" oninput="filterExLib(this.value)" aria-label="Search exercises"/>
+          <input class="search-inp" placeholder="Search library…" oninput="filterExLib(this.value)"/>
         </div>
         <div id="ex-lib-list"></div>
       </div>
 
-      <!-- HISTORY tab -->
+      <!-- HISTORY -->
       <div class="sub-view" id="wk-history">
         <div id="wk-hist-list"></div>
       </div>
+    </section>
 
-    </section><!-- /workout -->
 
-
-    <!-- ══════════ DIET ══════════ -->
+    <!-- ══════ DIET ══════ -->
     <section class="view" id="view-diet">
       <div class="tabs-row">
         <button class="tab-btn on" onclick="switchTab('diet','log',this)">Log</button>
@@ -255,11 +312,11 @@
         <button class="tab-btn"    onclick="switchTab('diet','recipes',this)">Recipes</button>
       </div>
 
-      <!-- DIET LOG tab -->
+      <!-- LOG -->
       <div class="sub-view on" id="diet-log">
         <div class="date-sel">
           <div>
-            <div class="date-sel-lbl">Log Date</div>
+            <div class="date-sel-lbl">Viewing</div>
             <div class="date-sel-val" id="diet-date-lbl">Today</div>
           </div>
           <div class="flex-gap8">
@@ -271,38 +328,37 @@
           <div class="total-card">
             <div class="total-num" id="diet-total-cal">0</div>
             <div class="total-lbl">kcal</div>
-            <div class="total-sub" id="diet-cal-goal-lbl">/ 2,200 goal</div>
+            <div class="total-sub" id="diet-cal-goal-lbl">of — goal</div>
           </div>
           <div class="total-card">
             <div class="total-num total-num-p" id="diet-total-prot">0</div>
             <div class="total-lbl">g protein</div>
-            <div class="total-sub" id="diet-prot-goal-lbl">/ 170g goal</div>
+            <div class="total-sub" id="diet-prot-goal-lbl">of — goal</div>
           </div>
         </div>
         <button class="btn btn-accent mb12" onclick="openLogFoodModal()">+ Log Food</button>
         <div id="diet-log-list"></div>
       </div>
 
-      <!-- FOODS tab -->
+      <!-- FOODS DB -->
       <div class="sub-view" id="diet-foods">
-        <button class="btn btn-accent mb12" onclick="openAddFoodModal()">+ Add Food to Database</button>
+        <button class="btn btn-accent mb12" onclick="openAddFoodModal()">+ Add Food</button>
         <div class="search-wrap">
           <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input class="search-inp" placeholder="Search foods…" oninput="filterFoodDB(this.value)" aria-label="Search foods"/>
+          <input class="search-inp" placeholder="Search foods…" oninput="filterFoodDB(this.value)"/>
         </div>
         <div id="food-db-list"></div>
       </div>
 
-      <!-- RECIPES tab -->
+      <!-- RECIPES -->
       <div class="sub-view" id="diet-recipes">
         <button class="btn btn-accent mb12" onclick="openCreateRecipeModal()">+ Create Recipe</button>
         <div id="recipe-list"></div>
       </div>
+    </section>
 
-    </section><!-- /diet -->
 
-
-    <!-- ══════════ PROGRESS ══════════ -->
+    <!-- ══════ PROGRESS ══════ -->
     <section class="view" id="view-progress">
 
       <div class="sh"><h2 class="sh-title">Streaks</h2></div>
@@ -312,7 +368,8 @@
         <div class="streak-card"><div class="streak-emoji">💧</div><div class="streak-num" id="streak-wt">0</div><div class="streak-lbl">Water</div></div>
       </div>
 
-      <div class="sh mt16"><h2 class="sh-title">Body Weight</h2>
+      <div class="sh mt16">
+        <h2 class="sh-title">Body Weight</h2>
         <button class="sh-link" onclick="openLogWeightModal()">+ Log</button>
       </div>
       <div class="chart-card">
@@ -354,37 +411,28 @@
       </div>
       <div class="bmi-card">
         <div class="bmi-stats">
-          <div class="bmi-stat">
-            <div class="bmi-stat-num" style="color:var(--blue)"   id="bmi-h-val">—</div>
-            <div class="bmi-stat-lbl">Height cm</div>
-          </div>
-          <div class="bmi-stat">
-            <div class="bmi-stat-num" style="color:var(--purple)" id="bmi-w-val">—</div>
-            <div class="bmi-stat-lbl">Weight kg</div>
-          </div>
-          <div class="bmi-stat">
-            <div class="bmi-stat-num" style="color:var(--accent)" id="bmi-val">—</div>
-            <div class="bmi-stat-lbl">BMI</div>
-          </div>
+          <div class="bmi-stat"><div class="bmi-stat-num" style="color:var(--blue)"   id="bmi-h-val">—</div><div class="bmi-stat-lbl">Height cm</div></div>
+          <div class="bmi-stat"><div class="bmi-stat-num" style="color:var(--purple)" id="bmi-w-val">—</div><div class="bmi-stat-lbl">Weight kg</div></div>
+          <div class="bmi-stat"><div class="bmi-stat-num" style="color:var(--accent)" id="bmi-val">—</div>  <div class="bmi-stat-lbl">BMI</div></div>
         </div>
         <div class="bmi-bar"><div class="bmi-marker" id="bmi-marker" style="left:50%"></div></div>
         <div class="bmi-range-lbl"><span>Under</span><span>Normal</span><span>Over</span><span>Obese</span></div>
-        <div class="bmi-status" id="bmi-status">Set your height &amp; weight to calculate BMI</div>
+        <div class="bmi-status" id="bmi-status">Set your height &amp; weight in Goals</div>
         <div class="divider"></div>
         <div class="goals-section-lbl">Daily Targets</div>
         <div class="goals-list">
-          <div class="goal-row"><span class="goal-row-lbl">🔥 Calories</span><span class="goal-row-val"       id="g-disp-cal">2,200 kcal</span></div>
-          <div class="goal-row"><span class="goal-row-lbl">💪 Protein</span> <span class="goal-row-val blue"   id="g-disp-prot">170 g</span></div>
-          <div class="goal-row"><span class="goal-row-lbl">💧 Water</span>   <span class="goal-row-val purple" id="g-disp-water">3,000 ml</span></div>
-          <div class="goal-row"><span class="goal-row-lbl">⚖️ Target Weight</span><span class="goal-row-val green" id="g-disp-tw">—</span></div>
+          <div class="goal-row"><span class="goal-row-lbl">🔥 Calories</span>       <span class="goal-row-val"        id="g-disp-cal">—</span></div>
+          <div class="goal-row"><span class="goal-row-lbl">💪 Protein</span>        <span class="goal-row-val blue"    id="g-disp-prot">—</span></div>
+          <div class="goal-row"><span class="goal-row-lbl">💧 Water</span>          <span class="goal-row-val purple"  id="g-disp-water">—</span></div>
+          <div class="goal-row"><span class="goal-row-lbl">⚖️ Target Weight</span>  <span class="goal-row-val green"   id="g-disp-tw">—</span></div>
         </div>
       </div>
 
-    </section><!-- /progress -->
+    </section>
 
   </main>
 
-  <!-- BOTTOM NAV -->
+  <!-- NAV -->
   <nav class="nav">
     <button class="nav-btn on" id="nav-home"     onclick="goTo('home')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -406,8 +454,7 @@
     </button>
     <button class="nav-btn" id="nav-progress" onclick="goTo('progress')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
-        <line x1="6"  y1="20" x2="6"  y2="14"/>
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
       </svg>
       <span class="nav-lbl">Progress</span>
     </button>
