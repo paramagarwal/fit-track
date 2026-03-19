@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#0b0b0e"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>FitTrack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- CONFIRM OVERLAY -->
+<div id="confirm-overlay" role="dialog" aria-modal="true">
+  <div class="confirm-sheet">
+    <div class="drag-bar"></div>
+    <div class="confirm-icon" id="conf-icon">🗑️</div>
+    <div class="confirm-title" id="conf-title">Are you sure?</div>
+    <div class="confirm-msg"   id="conf-msg">This cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-danger" id="conf-ok">Confirm</button>
+      <button class="btn btn-ghost"  onclick="closeConfirm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL OVERLAY -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()" role="dialog" aria-modal="true">
+  <div class="modal-sheet">
+    <div class="drag-bar"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="shell">
+
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <div class="logo">Fit<em>Track</em></div>
+    <div class="top-badge">
+      <div class="pulse-dot"></div>
+      <span><b id="wk-count">0</b> workouts this week</span>
+    </div>
+  </header>
+
+  <!-- VIEWS -->
+  <main id="views">
+
+    <!-- ══════════ HOME ══════════ -->
+    <section class="view active" id="view-home">
+
+      <div class="sh">
+        <h2 class="sh-title">Activity</h2>
+        <span class="sh-sub" id="home-date-lbl"></span>
+      </div>
+
+      <!-- Calendar -->
+      <div class="cal-card">
+        <div class="cal-nav">
+          <button class="cal-arrow" onclick="calShift(-1)" aria-label="Previous month">&#8249;</button>
+          <div class="cal-month" id="cal-label"></div>
+          <button class="cal-arrow" onclick="calShift(1)"  aria-label="Next month">&#8250;</button>
+        </div>
+        <div class="cal-dow" aria-hidden="true">
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Workout</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Water goal</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Creatine</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Diet logged</div>
+        </div>
+      </div>
+
+      <!-- Habits -->
+      <div class="sh"><h2 class="sh-title">Today's Habits</h2></div>
+
+      <!-- Creatine card -->
+      <div class="habit-card" id="creatine-card">
+        <div class="habit-top">
+          <div class="habit-icon">💊</div>
+          <div class="habit-info">
+            <div class="habit-label">Creatine</div>
+            <div class="habit-meta" id="cr-meta">Loading…</div>
+          </div>
+        </div>
+        <div class="creatine-row" id="cr-row" onclick="toggleCreatine()" role="checkbox" aria-checked="false" tabindex="0"
+             onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleCreatine()}">
+          <div class="cb-box" id="cr-cb" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <span class="cb-label">Taken today</span>
+          <span class="streak-pill" id="cr-streak-badge">🔥 0</span>
+        </div>
+      </div>
+
+      <!-- Water card -->
+      <div class="habit-card">
+        <div class="habit-top">
+          <div class="habit-icon">💧</div>
+          <div class="habit-info">
+            <div class="habit-label">Water Intake</div>
+            <div class="habit-meta">Daily hydration</div>
+          </div>
+        </div>
+        <div class="water-head">
+          <div class="water-val" id="water-val">0 ml</div>
+          <button class="edit-pill" onclick="openWaterEditModal()">✏️ Set Goal</button>
+        </div>
+        <div class="water-bar-bg"><div class="water-bar-fill" id="water-fill" style="width:0%"></div></div>
+        <div class="water-bar-lbl" id="water-lbl">0 / 0 ml</div>
+        <div class="water-btns">
+          <button class="water-btn" onclick="addWater(100)">+100</button>
+          <button class="water-btn" onclick="addWater(250)">+250</button>
+          <button class="water-btn" onclick="addWater(500)">+500</button>
+          <button class="water-btn" onclick="addWater(750)">+750</button>
+        </div>
+      </div>
+
+      <!-- Nutrition summary rings -->
+      <div class="sh">
+        <h2 class="sh-title">Today's Nutrition</h2>
+        <button class="sh-link" onclick="goTo('diet')">Log Food →</button>
+      </div>
+      <div class="ring-row">
+        <div class="ring-card">
+          <div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 88 88" aria-hidden="true">
+              <circle class="ring-track" cx="44" cy="44" r="35"/>
+              <circle class="ring-prog" id="cal-ring" cx="44" cy="44" r="35"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-num" id="ring-cal-val">0</div>
+              <div class="ring-unit">kcal</div>
+            </div>
+          </div>
+          <div class="ring-name">Calories</div>
+          <div class="ring-goal" id="ring-cal-goal">Goal: 2,200</div>
+        </div>
+        <div class="ring-card">
+          <div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 88 88" aria-hidden="true">
+              <circle class="ring-track" cx="44" cy="44" r="35"/>
+              <circle class="ring-prog ring-prog-p" id="pro-ring" cx="44" cy="44" r="35"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-num" id="ring-pro-val">0</div>
+              <div class="ring-unit">g</div>
+            </div>
+          </div>
+          <div class="ring-name">Protein</div>
+          <div class="ring-goal" id="ring-pro-goal">Goal: 170g</div>
+        </div>
+      </div>
+
+    </section><!-- /home -->
+
+
+    <!-- ══════════ WORKOUT ══════════ -->
+    <section class="view" id="view-workout">
+      <div class="tabs-row">
+        <button class="tab-btn on" onclick="switchTab('workout','log',this)">Log</button>
+        <button class="tab-btn"    onclick="switchTab('workout','templates',this)">Templates</button>
+        <button class="tab-btn"    onclick="switchTab('workout','exercises',this)">Library</button>
+        <button class="tab-btn"    onclick="switchTab('workout','history',this)">History</button>
+      </div>
+
+      <!-- LOG tab -->
+      <div class="sub-view on" id="wk-log">
+        <!-- Start card (shown when no active session) -->
+        <div id="wk-start-card">
+          <div class="sh" style="padding-top:8px"><h2 class="sh-title">Quick Start</h2></div>
+          <div id="wk-quick-tmpls"></div>
+          <div class="divider-row mb12"><span>or</span></div>
+          <button class="btn btn-ghost" onclick="startBlankSession()">🏋️&nbsp; Start Empty Workout</button>
+        </div>
+        <!-- Active session (hidden initially) -->
+        <div id="wk-session" style="display:none">
+          <div class="session-header">
+            <div class="session-title-row">
+              <input class="session-name-inp" id="session-name" value="Morning Workout" placeholder="Session name…"/>
+              <button class="session-cancel-btn" onclick="confirmCancelSession()">✕</button>
+            </div>
+            <div class="date-sel">
+              <div>
+                <div class="date-sel-lbl">Date</div>
+                <div class="date-sel-val" id="session-date-lbl">Today</div>
+              </div>
+              <div class="flex-gap8">
+                <input type="date" class="date-inp" id="session-date" onchange="updateSessionDateLabel()"/>
+                <button class="today-pill" onclick="setSessionToday()">Today</button>
+              </div>
+            </div>
+          </div>
+          <div class="add-ex-row">
+            <div class="add-ex-wrap">
+              <input class="inp" id="ex-search-inp" placeholder="Search or type exercise name…" oninput="showExSugg(this.value)" autocomplete="off" autocapitalize="words"/>
+              <div class="sugg-drop" id="ex-sugg"></div>
+            </div>
+            <button class="btn btn-accent btn-sm" onclick="addExToSession()">+ Add</button>
+          </div>
+          <div id="ex-cards-list"></div>
+          <button class="btn btn-accent mt8" id="save-session-btn" onclick="saveSession()" style="display:none">✓ Save Session</button>
+        </div>
+      </div>
+
+      <!-- TEMPLATES tab -->
+      <div class="sub-view" id="wk-templates">
+        <button class="btn btn-accent mb12" onclick="openCreateTemplateModal()">+ New Template</button>
+        <div id="tmpl-list"></div>
+      </div>
+
+      <!-- EXERCISES tab -->
+      <div class="sub-view" id="wk-exercises">
+        <div class="inp-row mb12">
+          <input type="text" class="inp" id="new-ex-name" placeholder="Exercise name…" autocapitalize="words" style="flex:1"/>
+          <select class="inp inp-select" id="new-ex-cat" style="width:120px">
+            <option>Chest</option><option>Back</option><option>Legs</option>
+            <option>Shoulders</option><option>Arms</option><option>Core</option><option>Cardio</option><option>Other</option>
+          </select>
+          <button class="btn btn-accent btn-sm" onclick="addExerciseToLib()">Add</button>
+        </div>
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="search-inp" placeholder="Search library…" oninput="filterExLib(this.value)" aria-label="Search exercises"/>
+        </div>
+        <div id="ex-lib-list"></div>
+      </div>
+
+      <!-- HISTORY tab -->
+      <div class="sub-view" id="wk-history">
+        <div id="wk-hist-list"></div>
+      </div>
+
+    </section><!-- /workout -->
+
+
+    <!-- ══════════ DIET ══════════ -->
+    <section class="view" id="view-diet">
+      <div class="tabs-row">
+        <button class="tab-btn on" onclick="switchTab('diet','log',this)">Log</button>
+        <button class="tab-btn"    onclick="switchTab('diet','foods',this)">Foods</button>
+        <button class="tab-btn"    onclick="switchTab('diet','recipes',this)">Recipes</button>
+      </div>
+
+      <!-- DIET LOG tab -->
+      <div class="sub-view on" id="diet-log">
+        <div class="date-sel">
+          <div>
+            <div class="date-sel-lbl">Log Date</div>
+            <div class="date-sel-val" id="diet-date-lbl">Today</div>
+          </div>
+          <div class="flex-gap8">
+            <input type="date" class="date-inp" id="diet-date" onchange="changeDietDate()"/>
+            <button class="today-pill" onclick="setDietToday()">Today</button>
+          </div>
+        </div>
+        <div class="totals-row">
+          <div class="total-card">
+            <div class="total-num" id="diet-total-cal">0</div>
+            <div class="total-lbl">kcal</div>
+            <div class="total-sub" id="diet-cal-goal-lbl">/ 2,200 goal</div>
+          </div>
+          <div class="total-card">
+            <div class="total-num total-num-p" id="diet-total-prot">0</div>
+            <div class="total-lbl">g protein</div>
+            <div class="total-sub" id="diet-prot-goal-lbl">/ 170g goal</div>
+          </div>
+        </div>
+        <button class="btn btn-accent mb12" onclick="openLogFoodModal()">+ Log Food</button>
+        <div id="diet-log-list"></div>
+      </div>
+
+      <!-- FOODS tab -->
+      <div class="sub-view" id="diet-foods">
+        <button class="btn btn-accent mb12" onclick="openAddFoodModal()">+ Add Food to Database</button>
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="search-inp" placeholder="Search foods…" oninput="filterFoodDB(this.value)" aria-label="Search foods"/>
+        </div>
+        <div id="food-db-list"></div>
+      </div>
+
+      <!-- RECIPES tab -->
+      <div class="sub-view" id="diet-recipes">
+        <button class="btn btn-accent mb12" onclick="openCreateRecipeModal()">+ Create Recipe</button>
+        <div id="recipe-list"></div>
+      </div>
+
+    </section><!-- /diet -->
+
+
+    <!-- ══════════ PROGRESS ══════════ -->
+    <section class="view" id="view-progress">
+
+      <div class="sh"><h2 class="sh-title">Streaks</h2></div>
+      <div class="streak-row">
+        <div class="streak-card"><div class="streak-emoji">🏋️</div><div class="streak-num" id="streak-wk">0</div><div class="streak-lbl">Workout</div></div>
+        <div class="streak-card"><div class="streak-emoji">💊</div><div class="streak-num" id="streak-cr">0</div><div class="streak-lbl">Creatine</div></div>
+        <div class="streak-card"><div class="streak-emoji">💧</div><div class="streak-num" id="streak-wt">0</div><div class="streak-lbl">Water</div></div>
+      </div>
+
+      <div class="sh mt16"><h2 class="sh-title">Body Weight</h2>
+        <button class="sh-link" onclick="openLogWeightModal()">+ Log</button>
+      </div>
+      <div class="chart-card">
+        <div class="chart-filters" id="wt-filters">
+          <button class="cf-btn"    onclick="setFilter('wt','7D',this)">7D</button>
+          <button class="cf-btn on" onclick="setFilter('wt','30D',this)">30D</button>
+          <button class="cf-btn"    onclick="setFilter('wt','90D',this)">90D</button>
+        </div>
+        <div class="chart-wrap"><canvas id="wt-chart"></canvas></div>
+      </div>
+
+      <div class="sh"><h2 class="sh-title">Nutrition History</h2></div>
+      <div class="chart-card">
+        <div class="chart-legend mb12">
+          <div class="cl-item"><div class="cl-dot" style="background:var(--accent)"></div>Calories</div>
+          <div class="cl-item"><div class="cl-dot" style="background:var(--blue)"></div>Protein (g)</div>
+        </div>
+        <div class="chart-filters" id="nut-filters">
+          <button class="cf-btn"    onclick="setFilter('nut','7D',this)">7D</button>
+          <button class="cf-btn on" onclick="setFilter('nut','30D',this)">30D</button>
+          <button class="cf-btn"    onclick="setFilter('nut','90D',this)">90D</button>
+        </div>
+        <div class="chart-wrap"><canvas id="nut-chart"></canvas></div>
+      </div>
+
+      <div class="sh"><h2 class="sh-title">Workout Frequency</h2></div>
+      <div class="chart-card">
+        <div class="chart-filters" id="wkf-filters">
+          <button class="cf-btn"    onclick="setFilter('wkf','4W',this)">4W</button>
+          <button class="cf-btn on" onclick="setFilter('wkf','8W',this)">8W</button>
+          <button class="cf-btn"    onclick="setFilter('wkf','12W',this)">12W</button>
+        </div>
+        <div class="chart-wrap"><canvas id="wkf-chart"></canvas></div>
+      </div>
+
+      <div class="sh">
+        <h2 class="sh-title">BMI & Goals</h2>
+        <button class="sh-link" onclick="openGoalsModal()">Edit Goals</button>
+      </div>
+      <div class="bmi-card">
+        <div class="bmi-stats">
+          <div class="bmi-stat">
+            <div class="bmi-stat-num" style="color:var(--blue)"   id="bmi-h-val">—</div>
+            <div class="bmi-stat-lbl">Height cm</div>
+          </div>
+          <div class="bmi-stat">
+            <div class="bmi-stat-num" style="color:var(--purple)" id="bmi-w-val">—</div>
+            <div class="bmi-stat-lbl">Weight kg</div>
+          </div>
+          <div class="bmi-stat">
+            <div class="bmi-stat-num" style="color:var(--accent)" id="bmi-val">—</div>
+            <div class="bmi-stat-lbl">BMI</div>
+          </div>
+        </div>
+        <div class="bmi-bar"><div class="bmi-marker" id="bmi-marker" style="left:50%"></div></div>
+        <div class="bmi-range-lbl"><span>Under</span><span>Normal</span><span>Over</span><span>Obese</span></div>
+        <div class="bmi-status" id="bmi-status">Set your height &amp; weight to calculate BMI</div>
+        <div class="divider"></div>
+        <div class="goals-section-lbl">Daily Targets</div>
+        <div class="goals-list">
+          <div class="goal-row"><span class="goal-row-lbl">🔥 Calories</span><span class="goal-row-val"       id="g-disp-cal">2,200 kcal</span></div>
+          <div class="goal-row"><span class="goal-row-lbl">💪 Protein</span> <span class="goal-row-val blue"   id="g-disp-prot">170 g</span></div>
+          <div class="goal-row"><span class="goal-row-lbl">💧 Water</span>   <span class="goal-row-val purple" id="g-disp-water">3,000 ml</span></div>
+          <div class="goal-row"><span class="goal-row-lbl">⚖️ Target Weight</span><span class="goal-row-val green" id="g-disp-tw">—</span></div>
+        </div>
+      </div>
+
+    </section><!-- /progress -->
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="nav">
+    <button class="nav-btn on" id="nav-home"     onclick="goTo('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span class="nav-lbl">Home</span>
+    </button>
+    <button class="nav-btn" id="nav-workout" onclick="goTo('workout')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6.5 6.5h11M6.5 17.5h11M3 12h18M6 3l-3 3 3 3M18 3l3 3-3 3M6 21l-3-3 3-3M18 21l3-3-3-3"/>
+      </svg>
+      <span class="nav-lbl">Workout</span>
+    </button>
+    <button class="nav-btn" id="nav-diet" onclick="goTo('diet')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+      </svg>
+      <span class="nav-lbl">Diet</span>
+    </button>
+    <button class="nav-btn" id="nav-progress" onclick="goTo('progress')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6"  y1="20" x2="6"  y2="14"/>
+      </svg>
+      <span class="nav-lbl">Progress</span>
+    </button>
+  </nav>
+
+</div><!-- #shell -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
