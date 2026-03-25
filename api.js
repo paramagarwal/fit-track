@@ -7,7 +7,7 @@
 // ─── CONFIG ──────────────────────────────────────────────────
 // Paste your Google Apps Script Web App URL here after deployment.
 // Leave empty to run fully offline (localStorage only).
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyyGa_J5ZgPe3hSeqDF2TO0UZLhwmOIdF5NTB1RxHj1V833m_R6pVjxjul1WD8Ms0Hb/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyRQxg8giwRbFgEUQZNINOv0UM1d9OO77Wm_z0pimTzWB6tBV2xHgX-R-PMf_4F2eWP/exec';
 
 const CACHE_TTL = {
   foods:     5  * 60 * 1000,   // 5 min
